@@ -1,127 +1,264 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
-    crossorigin="anonymous"></script>
-
-  <link rel="stylesheet" href="../styles/temperature.css" >
-  </link>
-
-</head>
-
-<body>
-  <%- include('partials/navbar') %>
-
-    <form action="/temperature" id="dateForm" method="post">
-    <div class="row mx-auto">
-      <div class="form-group col-4">
-        <label for="datepicker">Select a Date:</label>
-        <input type="date" class="form-control" id="datepicker" name="temperature[date]">
-      </div>
-      <div class="col-2 my-4">
-        <button class="btn btn-primary">Submit</button>
-        </div>
+<% layout('./layouts/boilerplate') -%>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<form action="/temperature" id="dateForm" method="post">
+  <div class="row mx-auto">
+    <div class="form-group col-4">
+      <label for="datepicker">Select a Date:</label>
+      <input type="date" class="form-control" id="datepicker" name="temperature[date]">
     </div>
-    </form>
-    <section class="fluid-container w-100 px-2 mx-auto " style="height: 70vh;">
-      <% if(temps.length===0){ %>
-        <div class="container d-flex justify-content-center align-items-center vh-100">
-          <div class="alert alert-danger text-center" role="alert">
-            No data available
-          </div>
-        </div>
-        <% } else{%>
-          <div class="card w-100 m-2 d-flex justify-content-between" id="chartCard" style="border: none;">
-            <div class="row no-gutters">
-              <div class="col-md-8" id="chartDiv">
-                <canvas class="card-img" id="chart"></canvas>
-              </div>
-              <div class="col-md-4" id="chartContent">
-                <div class="card-body">
-                  <h5 class="card-title"><b>Temperature</b></h5>
-                  <p class="card-text">
-                    <p>
-                      <button class="btn btn-close-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWidthExample" aria-expanded="false" aria-controls="collapseWidthExample">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right-short" viewBox="0 0 16 16">
-                          <path fill-rule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"/>
-                        </svg>
-                        Average Temperature
-                      </button>
-                    </p>
-                    <div style="min-height: 120px;">
-                      <div class="collapse collapse-horizontal" id="collapseWidthExample">
-                        <div class="card card-body" style="width: 300px;">
-                          This is some placeholder content for a horizontal collapse. It's hidden by default and shown when triggered.
-                        </div>
-                      </div>
-                    </div>
-                  </p>
-                  <p class="card-text">Additional content goes here.</p>
-                </div>
-              </div>
-              
+    <div class="col-2 my-4">
+      <button class="btn btn-primary">Submit</button>
+    </div>
+  </div>
+</form>
+
+<section class="fluid-container w-100 px-2 mx-auto " style="height: 70vh;">
+<% if(temps.length===0){ %>
+  <div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="alert alert-danger text-center" role="alert">
+      No data available
+    </div>
+  </div>
+<% } else{%>
+  <div class="card w-100 m-2 d-flex justify-content-between" id="chartCard" style="border: none;">
+    <div class="row no-gutters">
+      <div class="col-md-8" id="chartDiv">
+        <canvas class="card-img" id="chart"></canvas>
+      </div>
+      <div class="col-md-4" id="chartContent">
+        <div class="card-body">
+          <h5 class="card-title"><b>Temperature</b></h5>
+          <p class="card-text">
+          <p>
+            <button class="btn btn-close-white avgTempTitle" type="button" data-bs-toggle="collapse"
+              data-bs-target="#collapseWidthExample" aria-expanded="false" aria-controls="collapseWidthExample">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                class="bi bi-arrow-right-short" viewBox="0 0 16 16">
+                <path fill-rule="evenodd"
+                  d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z" />
+              </svg>
+              Average Temperature
+            </button>
+          </p>
+          
+          <div class="collapse " id="collapseWidthExample">
+            <div class="card card-body tempPlaceHolder" style="width: 150px;">
+              <span id="avgTemp"></span>              
             </div>
           </div>
-          <% } %>
+          <br>
+
+
+          <div class="row">
+            <div class="col-lg-6 col-12 tempFeatures">
+              <p>Min Temp: <span id="minTemp"></span></p>
+            </div>
+            <div class="col-lg-6 col-12 tempFeatures">
+              <p>Max Temp: <span id="maxTemp"></span></p>
+            </div>
+          </div>
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <% } %>
+
+
+
+<style>
+  h1,h2,h3,h4,h5{
+    font-family: "Roboto Mono",cursive;
+  }
+  .tempPlaceHolder{
+    border: 1px  #1b263b solid;
+    /* border-radius: 5%; */
+    font-family: 'Roboto Mono',cursive;
+    font-size: large;
+    font-weight: 400;
+    padding: 10px;
+    margin: auto;
+  }
+  .tempFeatures,.avgTempTitle{
+    font-family: 'Roboto Mono',cursive;
+    font-weight: 500;
+    font-size: medium;
+    font-size: large;
+  }
+  #avgTemp{
+    display: inline-block;
+    margin: auto;
+    font-weight: 400;
+    
+  }
+</style>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<!-- <script type="text/javascript" src="../scripts/temperature.js" defer></script> -->
+
+
+<script>
+  const ctx = document.getElementById('chart');
+  const temps = JSON.parse('<%- JSON.stringify(temps) %>');
+  let tempArr = [];
+  const timeArr = [];
+  for (let temp of temps) {
+    tempArr.push(temp.temp);
+    timeArr.push(temp.time);
+  }
+  timeArr.map((el) => {
+    const tempDate = new Date(el);
+    return `${tempDate.getHours()}:${tempDate.getMinutes()}`;
+  })
+
+  const convertedTimeArr = timeArr.map(date => {
+    date = new Date(date)
+    const hours = date.getHours().toString().padStart(2, '0'); // Add leading zero if needed
+    const minutes = date.getMinutes().toString().padStart(2, '0'); // Add leading zero if needed
+    return `${hours}:${minutes}`;
+  });
+
+  // const data=convertedTimeArr.map((x,index)=>({x:x,y:tempArr[index]}))
+  const data = tempArr.map((y, index) => ({
+    x: index,
+    y: y
+  }));
+
+
+
+  const totalDuration = 20000;
+  const delayBetweenPoints = totalDuration / data.length;
+  const previousY = (ctx) => ctx.index === 0 ? ctx.chart.scales.y.getPixelForValue(100) : ctx.chart.getDatasetMeta(ctx.datasetIndex).data[ctx.index - 1].getProps(['y'], true).y;
+  const animation = {
+    x: {
+      type: 'number',
+      easing: 'linear',
+      duration: delayBetweenPoints,
+      from: NaN, // the point is initially skipped
+      delay(ctx) {
+        if (ctx.type !== 'data' || ctx.xStarted) {
+          return 0;
+        }
+        ctx.xStarted = true;
+        return ctx.index * delayBetweenPoints;
+      }
+    },
+    y: {
+      type: 'number',
+      easing: 'linear',
+      duration: delayBetweenPoints,
+      from: data[0].y,
+      delay(ctx) {
+        if (ctx.type !== 'data' || ctx.yStarted) {
+          return 0;
+        }
+        ctx.yStarted = true;
+        return ctx.index * delayBetweenPoints;
+      }
+    }
+  };
+
+  
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: [{
+        borderColor: 'red',
+        borderWidth: 1,
+        radius: 0,
+        data: data,
+      }]
+    },
+    options: {
+      animation,
+      interaction: {
+        intersect: false
+      },
+      plugins: {
+        legend: false
+      },
+      scales: {
+        x: {
+          type: 'linear',
+          ticks: {
+            callback: function (value, index, values) {
+              // Ensure the value is within the range of timeArr indices
+              const dataIndex = Math.min(Math.max(value, 0), timeArr.length - 1);
+              // Get the corresponding time value from timeArr
+              const timeValue = convertedTimeArr[dataIndex];
+              // Format and return the time value as desired
+              return timeValue;
+            }
+          }
+        },
+        y: {
+          suggestedMin: 0,
+          suggestedMax: 80
+        }
+      },
+      
+      plugins:{
+        legend:{
+        display:false,
+        title:{
+          text:"\u00B0C",
+          color:'red',
+          padding:2,
+        }
+      },
+      tooltip: {
+        callbacks: {
+          backgrooundColor:"white",
+          title: function (tooltipItem, data) {
+            const dataIndex = tooltipItem[0].dataIndex;
+            const xValue = convertedTimeArr[dataIndex];
+            // console.log(dataIndex,xValue);
+            return xValue;
+          }
+        }
+      }
+    }
+    }
+  });
 
 
 
 
+  function avgTemperature(tempArr) {
+    let sum = 0;
+    for (let i = 0; i < tempArr.length; i++) {
+      sum += tempArr[i];
+    }
+    sum = sum / tempArr.length;
+    ;
+    return sum;
+  }
 
+  const minMaxTemp=(tempArr)=>{
+    tempArr.sort();
+    const temp={minTemp:tempArr[0],maxTemp:tempArr[tempArr.length-1]}
+    return temp;
+  }
+  const updateTemperature=(temp)=>{
+    const tempPlaceHolder=document.querySelector("#avgTemp");
+    const minTemp=document.querySelector("#minTemp");
+    const maxTemp=document.querySelector("#maxTemp");
+    const tempFeatures=minMaxTemp(temp);
+    console.log(tempFeatures)
+    minTemp.textContent=`${tempFeatures.minTemp}\u00B0C`;
+    maxTemp.textContent=`${tempFeatures.maxTemp}\u00B0C`;
+    tempPlaceHolder.textContent=`${avgTemperature(temp).toFixed(2)}\u00B0C`;
 
+  }
 
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-            <script>
-              const ctx = document.getElementById('chart');
-              const temps = JSON.parse('<%- JSON.stringify(temps) %>');
-              let tempArr = [];
-              const timeArr = [];
-              for (let temp of temps) {
-                tempArr.push(temp.temp);
-                timeArr.push(temp.time);
-              }
-              new Chart(ctx, {
-                type: 'line',
-                data: {
-                  labels: timeArr.map((el) => {
-                    el = new Date(el);
-                    return `${el.getHours()}:${el.getMinutes()}`;
-                  }),//['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-                  datasets: [{
-                    label: '\u00B0C',
-                    data: tempArr,//[12, 19, 3, 5, 2, 3],
-                    borderWidth: 1
-                  }]
-                },
-                options: {
-                  scales: {
-                    y: {
-                      beginAtZero: true
-                    }
-                  }
-                }
-              });
-
-               function avgTemperature(tempArr){
-                let sum=0;
-                for(let i=0;i<tempArr.length;i++){
-                  sum+=tempArr[i];
-                }
-                sum=sum/tempArr.length;
-                console.log(sum);
-                return sum;
-               }
-               avgTemperature(tempArr);
-            </script>
-
-</body>
-
-</html>
+  
+  const interval=setInterval(updateTemperature(tempArr),1000);
+</script>

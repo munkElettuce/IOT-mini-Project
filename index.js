@@ -6,10 +6,11 @@ const express=require("express");
 const app=express();
 const mongoose=require("mongoose");
 const Temperature=require("./models/temperature");
-
+const ejsMate=require('ejs-mate');
 
 app.use(express.urlencoded({extended:true}));
 app.use(express.json());
+app.engine('ejs',ejsMate);
 app.set('view engine','ejs');
 
 main().catch(err => console.log(err));
@@ -23,18 +24,13 @@ app.get("/",(req,res)=>{
     res.render("index");
 })
 
+app.get("/smoke",async (req,res)=>{
+
+})
+
 app.get("/temperature", async (req, res) => {
-    // console.log(req.body.temperature.date);
-    const startDate = new Date('2023-07-07');
-    const endDate = new Date("2023-07-08");
-    const temps = await Temperature.find({
-      time: {
-        $gte: startDate,
-        $lte: endDate
-      }
-    });
-    // console.log(temps);
-    res.render("temperature",{temps:temps});
+    
+    res.render("temperature",{temps:[]});
 });
   
 app.post("/temperature",async (req,res)=>{
@@ -50,7 +46,8 @@ app.post("/temperature",async (req,res)=>{
       $gte: startDate,
       $lte: endDate
     }
-  });
+  }).sort({time:1}).exec();
+  
   res.render("temperature",{temps:temps})
 }
   res.render("temperature",{temps:[]})
