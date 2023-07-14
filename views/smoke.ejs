@@ -1,0 +1,363 @@
+<% layout('./layouts/boilerplate') -%>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+
+<form action="/smoke" id="dateForm" method="post">
+    <div class="row mx-auto">
+      <div class="form-group col-4">
+        <label for="datepicker">Select a Date:</label>
+        <input type="date" class="form-control" id="datepicker" name="date">
+      </div>
+      <div class="col-2 my-4">
+        <button class="btn btn-primary">Submit</button>
+      </div>
+    </div>
+</form>
+
+<section class="fluid-container w-100 px-2 mx-auto " style="height: 70vh;">
+    <% if(smokeArr.length===0){ %>
+      <div class="container d-flex justify-content-center align-items-center vh-100">
+        <div class="alert alert-danger text-center" role="alert">
+          No data available
+        </div>
+      </div>
+    <% } else{%>
+      <div class="card w-100 m-2 d-flex justify-content-between" id="chartCard" style="border: none;">
+        <div class="row no-gutters">
+          <div class="col-md-8" id="chartDiv">
+            <canvas class="card-img" id="chart"></canvas>
+          </div>
+          <div class="col-md-4" id="chartContent">
+            <div class="card-body">
+              <h5 class="card-title"><b>Smoke Density</b></h5>
+              <p class="card-text">
+              <p>
+                <button class="btn btn-close-white avgSmokeTitle" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#collapseWidthExample" aria-expanded="false" aria-controls="collapseWidthExample">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-arrow-right-short" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                      d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z" />
+                  </svg>
+                  Average Smoke Density
+                </button>
+              </p>
+              
+              <div class="collapse " id="collapseWidthExample">
+                <div class="card card-body smokeDensityPlaceHolder" style="width: 150px;">
+                  <span id="avgSmokeDensity"></span>              
+                </div>
+              </div>
+              <br>
+    
+    
+              <div class="row">
+                <div class="col-lg-6 col-12 smokeDensityFeatures">
+                  <p>Min Smoke Density: <span id="minSmokeDensity"></span></p>
+                </div>
+                <div class="col-lg-6 col-12 smokeDensityFeatures">
+                  <p>Max Smoke Density: <span id="maxSmokeDensity"></span></p>
+                </div>
+              </div>
+              </p>
+            </div>
+          </div>
+    
+        </div>
+      </div>
+      <% } %>
+</section>
+
+
+<style>
+    h1,h2,h3,h4,h5{
+      font-family: "Roboto Mono",cursive;
+    }
+    .tempPlaceHolder{
+      border: 1px  #1b263b solid;
+      /* border-radius: 5%; */
+      font-family: 'Roboto Mono',cursive;
+      font-size: large;
+      font-weight: 400;
+      padding: 10px;
+      margin: auto;
+    }
+    .tempFeatures,.avgTempTitle{
+      font-family: 'Roboto Mono',cursive;
+      font-weight: 500;
+      font-size: medium;
+      font-size: large;
+    }
+    #avgTemp{
+      display: inline-block;
+      margin: auto;
+      font-weight: 400;
+      
+    }
+  </style>
+  
+  
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  
+  <!-- <script type="text/javascript" src="../scripts/temperature.js" defer></script> -->
+  
+  
+  
+
+  <script>
+    const ctx = document.getElementById('chart');
+    const smokeDensity = JSON.parse('<%- JSON.stringify(smokeArr) %>');
+    let smokeArr = [];
+    const timeArr = [];
+    for (let smoke of smokeDensity) {
+      smokeArr.push(smoke.smokeDensity);
+      timeArr.push(smoke.time);
+      // console.log(smoke);
+
+    }
+
+    timeArr.map((el) => {
+      const tempDate = new Date(el);
+      return `${tempDate.getHours()}:${tempDate.getMinutes()}`;
+    })
+  
+    const convertedTimeArr = timeArr.map(date => {
+      date = new Date(date)
+      const hours = date.getHours().toString().padStart(2, '0'); // Add leading zero if needed
+      const minutes = date.getMinutes().toString().padStart(2, '0'); // Add leading zero if needed
+      return `${hours}:${minutes}`;
+    });
+  
+    // const data=convertedTimeArr.map((x,index)=>({x:x,y:tempArr[index]}))
+    const data = smokeArr.map((y, index) => ({
+      x: index,
+      y: y
+    }));
+  
+
+    // console.log(data);
+  
+    const totalDuration = 20000;
+    const delayBetweenPoints = totalDuration / data.length;
+    const previousY = (ctx) => ctx.index === 0 ? ctx.chart.scales.y.getPixelForValue(100) : ctx.chart.getDatasetMeta(ctx.datasetIndex).data[ctx.index - 1].getProps(['y'], true).y;
+    const animation = {
+      x: {
+        type: 'number',
+        easing: 'linear',
+        duration: delayBetweenPoints,
+        from: NaN, // the point is initially skipped
+        delay(ctx) {
+          if (ctx.type !== 'data' || ctx.xStarted) {
+            return 0;
+          }
+          ctx.xStarted = true;
+          return ctx.index * delayBetweenPoints;
+        }
+      },
+      y: {
+        type: 'number',
+        easing: 'linear',
+        duration: delayBetweenPoints,
+        from: data[0].y,
+        delay(ctx) {
+          if (ctx.type !== 'data' || ctx.yStarted) {
+            return 0;
+          }
+          ctx.yStarted = true;
+          return ctx.index * delayBetweenPoints;
+        }
+      }
+    };
+  
+    
+  
+    const smokeChart=new Chart(ctx, {
+      type: 'line',
+      data: {
+        datasets: [{
+          borderColor: 'grey',
+          borderWidth: 1,
+          radius: 0,
+          data: data,
+        }]
+      },
+      options: {
+        animation,
+        interaction: {
+          intersect: false
+        },
+        plugins: {
+          legend: false
+        },
+        scales: {
+          x: {
+            type: 'linear',
+            ticks: {
+              callback: function (value, index, values) {
+                // Ensure the value is within the range of timeArr indices
+                const dataIndex = Math.min(Math.max(value, 0), timeArr.length - 1);
+                // Get the corresponding time value from timeArr
+                const timeValue = convertedTimeArr[dataIndex];
+                // Format and return the time value as desired
+                return timeValue;
+              }
+            }
+          },
+          // y: {
+          //   suggestedMin: data[0].y-20,
+          //   suggestedMax: data[data.length-1].y+20
+          // }
+        },
+        
+        plugins:{
+          legend:{
+          display:false,
+          title:{
+            text:"\u00B0C",
+            color:'red',
+            padding:2,
+          }
+        },
+        tooltip: {
+          callbacks: {
+            backgrooundColor:"white",
+            title: function (tooltipItem, data) {
+              const dataIndex = tooltipItem[0].dataIndex;
+              const xValue = convertedTimeArr[dataIndex];
+              // console.log(dataIndex,xValue);
+              return xValue;
+            }
+          }
+        }
+      }
+      }
+    });
+
+    const arraysAreEqual = (array1, array2) => {
+      if (array1.length !== array2.length) {
+        return false;
+      }
+
+      for (let i = 0; i < array1.length; i++) {
+        if (array1[i].x !== array2[i].x || array1[i].y !== array2[i].y) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    function avgSmokeDensity(tempArr) {
+      let sum = 0;
+      for (let i = 0; i < tempArr.length; i++) {
+        sum += tempArr[i];
+      }
+      sum = sum / tempArr.length;
+      ;
+      return sum;
+    }
+
+    const minMaxTemp=(tempArr)=>{
+      tempArr.sort();
+      const temp={minTemp:tempArr[0],maxTemp:tempArr[tempArr.length-1]}
+      return temp;
+      // console.log(tempArr.sort());
+    }
+
+    const updateTemperature = (temp) => {
+      const tempPlaceHolder = document.querySelector("#avgSmokeDensity");
+      const minTemp = document.querySelector("#minSmokeDensity");
+      const maxTemp = document.querySelector("#maxSmokeDensity");
+      const tempFeatures = minMaxTemp(temp);
+      minTemp.textContent = `${tempFeatures.minTemp}`;
+      maxTemp.textContent = `${tempFeatures.maxTemp}`;
+      tempPlaceHolder.textContent = `${avgSmokeDensity(temp).toFixed(5)}`;
+    }
+
+
+    const updateChart=()=>{
+      //send a get request with the date to the server and update the chart
+      //data=[{x:,y:},...] x is the time  and y is the temp
+      //temperature model is temp=[{temp:,time:}...]
+      const date=new Date(timeArr[0])//get the date from the time arr
+      date.setHours(0);
+      date.setMinutes(0);
+      date.setSeconds(0);
+      const dateString=date.toISOString()
+      console.log(dateString);
+      const url = `/get-smoke-data?date=${encodeURIComponent(date)}`;
+      const updatedTempArr=[];
+      const updatedTimeArr=[];
+      fetch(url)
+      .then(res=>res.json())
+      .then(data=>{
+        for(temp of data){
+          updatedTempArr.push(temp.smokeDensity);
+          updatedTimeArr.push(temp.time)
+          // console.log(temp);
+        }
+
+        const updatedConvertedTimeArr = updatedTimeArr.map(date => {
+        try {
+          date = new Date(date);
+          const hours = date.getHours().toString().padStart(2, '0');
+          const minutes = date.getMinutes().toString().padStart(2, '0');
+          return `${hours}:${minutes}`;
+        } catch (error) {
+          console.error('Error converting date:', date, error);
+          return ''; // or any other default value for invalid dates
+        }
+
+       //.log(updatedConvertedTimeArr[3],updatedConvertedTimeArr[499]);
+        
+      
+      })
+      const dataTemp = updatedTempArr.map((y, index) => ({
+          x: index,
+          y: y
+        }));
+        // console.log(dataTemp);
+        if (!arraysAreEqual(smokeChart.data.datasets[0].data, dataTemp)) {
+          // Update the chart only if the data has changed
+          smokeChart.data.datasets[0].data = dataTemp;
+          smokeChart.update();
+        }
+        // let {temp,time}=data[i];
+        // const value={
+        //   x:,
+        //   y:temp
+        // }
+
+        // Check if the data array has an element at the current index
+        // if (smokeChart.data.datasets[0].data[i] !== undefined) {
+        //   // Update the existing data value at the index
+        //   smokeChart.data.datasets[0].data[i] = value;
+        // } else {
+        //   // If the data array doesn't have an element at the index, push a new value
+        //   smokeChart.data.datasets[0].data.push(value);
+        // }
+
+        smokeChart.options.plugins.tooltip.callbacks.title=function (tooltipItem, data) {
+          const dataIndex = tooltipItem[0].dataIndex;
+          const xValue = updatedConvertedTimeArr[dataIndex];
+          return xValue;
+        }
+      updateTemperature(updatedTempArr);
+      updatedTempArr.length=0;
+      updatedTimeArr.length=0;
+      smokeChart.update();
+
+      console.log("updaing chart")
+    });
+      
+    }
+    
+    updateTemperature(smokeArr);
+    setInterval(updateChart,5*1000);
+
+
+
+</script>

@@ -1,0 +1,30 @@
+<!-- This page consists of user where we can check pulse rate of previously stored users -->
+
+<% layout('./layouts/boilerplate') -%>
+
+<div class="row mx-4">
+    <form action="/post" method="post">
+        <button type="submit" class="btn btn-primary " >Add a new user</button>
+    </form>
+</div>
+<hr>
+
+<div class="container">
+    <% for (let i = 0; i < users.length; i += 3) { %>
+    <div class="row userDetails d-flex justify-content-center no-gutters ">
+      <% for (let j = i; j < Math.min(i + 3, users.length); j++) { %>
+      <div class="card col-md-5 col-lg-3 col-10 px-0 mx-1 mb-4">
+        <h4 class="card-header text-center textNormal"><b class="textBold">Name: </b><%= users[j].name %></h4>
+        <div class="card-body">
+          <h5 class="textNormal"><span class="textBold">Average Pulse Rate: </span><span class="avgPulseRate"><%= users[j].pulseRate %></span></h5>
+          <p class="card-text textNormal"><span class="textBold">Date:</span><%= `${users[j].time.getDate()}/${users[j].time.getMonth() + 1}/${users[j].time.getFullYear()}` %></p>
+          <p class="card-text textNormal"><span class="textBold">Day:</span><%= users[j].time.getDay() %></p>
+          <a href="/pulse/<%=users[j]._id%>" class="btn btn-primary">Check <%=users[j].name%>'s details</a>
+        </div>
+      </div>
+      <% } %>
+    </div>
+    <% } %>
+</div>
+  
+  
